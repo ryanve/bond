@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.1.0-2
+Version: 0.1.0-3
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -40,7 +40,7 @@ add_action('init', function() {
         )
     )));
     
-    /* register_post_type('_' . $cpt, apply_filters("@$cpt:cpt:ui", array(
+    register_post_type("_$cpt", apply_filters("@$cpt:cpt:ui", array(
         'public' => current_user_can('delete_posts')
       , 'has_archive' => false
       , 'taxonomies' => get_taxonomies()
@@ -66,7 +66,7 @@ add_action('init', function() {
           , 'singular_name' => '- Bond'
           , 'name' => '- Bonds', 
         )
-    ))); */
+    )));
 
     /* register_taxonomy($cpt, array($cpt), apply_filters("@$cpt:tax:ui", array(
         'public' => $is_admin && current_user_can('delete_others_posts')
@@ -106,12 +106,12 @@ add_action('init', function() {
             and ($post = get_posts(
                 apply_filters("@$cpt:get_posts", array(
                     'posts_per_page'  => 1
-                  , 'post_type' => $cpt
+                  , 'post_type' => "_$cpt"
                // , 'taxonomy' => $query->taxonomy
                // , 'terms' => $query->term_id
                // , 'meta_key' => "$cpt-term"
-                  , 'taxonomy' => $cpt
-                  , 'terms' => 'term-' . $query->term_id
+               // , 'taxonomy' => $cpt
+               // , 'terms' => 'term-' . $query->term_id
                   , 'field' => 'id'
                   , 'order' => 'DESC'
                   , 'orderby' => 'post_date'
