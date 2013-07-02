@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.1.0-5
+Version: 0.1.0-6
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -72,7 +72,7 @@ add_action('init', function() {
     }, 100);
 
     $is_admin or add_action('wp', function() use ($cpt) {
-        #print_r(get_queried_object());
+        # print_r(get_queried_object());
         $bool = (bool) (
             ! is_singular()
             and is_object($query = get_queried_object())
@@ -81,12 +81,10 @@ add_action('init', function() {
             and ($post = get_posts(
                 apply_filters("@$cpt:get_posts", array(
                     'posts_per_page'  => 1
-                  , 'post_type' => $cpt
-               // , 'taxonomy' => $query->taxonomy
-               // , 'terms' => $query->term_id
+                  , 'post_type' => $cpt #get_post_types()
                   , 'taxonomy' => $cpt
                   , 'terms' => 'term-' . $query->term_id
-                  , 'field' => 'id'
+                  , 'field' => 'slug'
                   , 'order' => 'DESC'
                   , 'orderby' => 'post_date'
                   , 'post_status' => 'publish'
