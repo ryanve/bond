@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.0.0
+Version: 0.1.0-0
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -12,7 +12,7 @@ License: MIT
 add_action('init', function() {
     $cpt = 'bond';
     $is_admin = is_admin();
-    register_post_type($cpt, apply_filters("@$cpt:ui", array(
+    register_post_type($cpt, apply_filters("@$cpt:cpt:ui", array(
         'public' => current_user_can('delete_posts')
       , 'has_archive' => false
       , 'taxonomies' => get_taxonomies()
@@ -35,10 +35,60 @@ add_action('init', function() {
           , 'choose_from_most_used' => __('Most used')
           , 'not_found' => __('Not found')
           , 'parent_item_colon' => __('Parent:')
-          , 'singular_name' => __('Bond')
-          , 'name' => __('Bonds'), 
+          , 'singular_name' => 'Bond +'
+          , 'name' => 'Bonds +', 
         )
     )));
+    
+    /*register_post_type('_' . $cpt, apply_filters("@$cpt:cpt:ui", array(
+        'public' => current_user_can('delete_posts')
+      , 'has_archive' => false
+      , 'taxonomies' => get_taxonomies()
+      , 'capability_type' => 'page'
+      , 'hierarchical' => true
+      , 'supports' => explode('|', 'title|editor|author|thumbnail|excerpt|custom-fields|page-attributes')
+      , 'exclude_from_search' => true
+      , 'publicly_queryable' => false
+      , 'labels' => array(
+            'all_items' => __('All')
+          , 'edit_item' => __('Edit')
+          , 'view_item' => __('View')
+          , 'update_item' => __('Update')
+          , 'add_new_item' => __('Add')
+          , 'new_item_name' => __('Name')
+          , 'search_items' => __('Search')
+          , 'popular_items' => __('Popular')
+          , 'separate_items_with_commas' => __('Separate with commas')
+          , 'add_or_remove_items' => __('Add or remove')
+          , 'choose_from_most_used' => __('Most used')
+          , 'not_found' => __('Not found')
+          , 'parent_item_colon' => __('Parent:')
+          , 'singular_name' => '- Bond'
+          , 'name' => '- Bonds', 
+        )
+    )));*/
+
+    register_taxonomy($cpt, array($cpt), apply_filters("@$cpt:tax:ui", array(
+        'public' => $is_admin && current_user_can('delete_others_posts')
+      , 'hierarchical' => true
+      , 'rewrite' => array('slug' => '_' . $cpt)
+      , 'labels' => array(
+            'all_items' => __('All')
+          , 'popular_items' => __('Popular')
+          , 'edit_item' => __('Edit')
+          , 'view_item' => __('View')
+          , 'update_item' => __('Update')
+          , 'search_items' => __('Search')
+          , 'add_new_item' => __('Add')
+          , 'new_item_name' => __('Name')
+          , 'add_or_remove_items' => __('Add or remove')
+          , 'choose_from_most_used' => __('Most used')
+          , 'not_found' => __('Not found')
+          , 'separate_items_with_commas' => 'Separate with commas.'
+          , 'name' => 'Bonds -'
+          , 'singular_name' => 'Bond -'
+        ))
+    ));
     
     $is_admin or add_action('pre_get_posts', function(&$main) use ($cpt) {
         $main->is_main_query() && empty($main->is_singular) && $main->set('post_type', array_diff(
@@ -49,7 +99,7 @@ add_action('init', function() {
     $is_admin or add_action('wp', function() use ($cpt) {
         $bool = (bool) (
             ! is_singular()
-            and is_object($query = get_queried_object()) 
+            and is_object($query = get_queried_object())
             and !empty($query->taxonomy) 
             and !empty($query->term_id) 
             and ($post = get_posts(
@@ -63,7 +113,7 @@ add_action('init', function() {
                   , 'orderby' => 'post_date'
                   , 'post_status' => 'publish'
                   , 'suppress_filters' => true
-                ), $query))) 
+                ), $query)))
             and is_object($post = array_shift($post))
             and add_filter('get_term', function($term, $tax) use ($cpt, $post) {
                 return apply_filters("@$cpt:term", $term, $post);
@@ -88,17 +138,6 @@ add_action('init', function() {
             empty($post->{$v}) or $term->{$k} = $post->{$v};
         return $term;
     });
-    
-    /* add_filter("@$cpt:term", function($term, $post) use ($cpt) {
-        $meta = (object) get_post_meta($post);
-        foreach ($meta as $k => $v) {
-            if (property_exists($term, $k)) {
-                if (property_exists($post, $v)) $term->{$k} = $post->{$v}
-                else property_exists($meta, $v) and $term->{$k} = $meta->{$v};
-            }
-        }
-        return $term;
-    }, 10, 2); */
 }, 1);
 
 #end
