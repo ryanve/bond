@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.1.0-1
+Version: 0.1.0-2
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -109,9 +109,9 @@ add_action('init', function() {
                   , 'post_type' => $cpt
                // , 'taxonomy' => $query->taxonomy
                // , 'terms' => $query->term_id
-                  , 'meta_key' => "$cpt-term"
-               // , 'taxonomy' => $cpt
-               // , 'terms' => 'term-' . $query->term_id
+               // , 'meta_key' => "$cpt-term"
+                  , 'taxonomy' => $cpt
+                  , 'terms' => 'term-' . $query->term_id
                   , 'field' => 'id'
                   , 'order' => 'DESC'
                   , 'orderby' => 'post_date'
@@ -119,7 +119,7 @@ add_action('init', function() {
                   , 'suppress_filters' => true
                 ), $query)))
             and is_object($post = array_shift($post))
-            and in_array('term-' . $query->term_id, preg_split('#\s+#', get_post_meta($post->ID, "$cpt-term", true)))
+            // and in_array('term-' . $query->term_id, preg_split('#\s+#', get_post_meta($post->ID, "$cpt-term", true)))
             and add_filter('get_term', function($term, $tax) use ($cpt, $post) {
                 return apply_filters("@$cpt:term", $term, $post);
             }, 1, 2)
