@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.1.0-6
+Version: 0.1.0-7
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -65,10 +65,12 @@ add_action('init', function() {
     $is_admin or add_action('pre_get_posts', function(&$query) use ($cpt) {
         # Conditional Tags are not available yet here. 
         # Props like `$query->is_singular` are usable.
-        $types = (array) ($query->get('post_type') ?: array());
-        $admit = (bool) apply_filters("@$cpt:admit", $query->is_main_query());
-        $admit ? $types[] = $cpt : $types = array_diff($types, array($cpt));
-        $query->set('post_type', array_unique($types));
+        if ($query->is_main_query()) {
+            $types = (array) ($query->get('post_type') ?: array());
+            $admit = apply_filters("@$cpt:admit", true);
+            $admit ? $types[] = $cpt : $types = array_diff($types, array($cpt));
+            $query->set('post_type', array_unique($types));
+        }
     }, 100);
 
     $is_admin or add_action('wp', function() use ($cpt) {
