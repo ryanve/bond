@@ -40,7 +40,7 @@ add_action('init', function() {
         )
     )));
     
-    /* register_taxonomy($cpt, array($cpt), apply_filters("@$cpt:tax:ui", array(
+    register_taxonomy($cpt, array($cpt), apply_filters("@$cpt:tax:ui", array(
         'public' => $is_admin && current_user_can('delete_others_posts')
       , 'hierarchical' => true
       , 'rewrite' => array('slug' => '_' . $cpt)
@@ -60,7 +60,7 @@ add_action('init', function() {
           , 'name' => 'Bonds -'
           , 'singular_name' => 'Bond -'
         ))
-    )); */
+    ));
     
     /* $is_admin or add_action('pre_get_posts', function(&$main) use ($cpt) {
         $main->is_main_query() && empty($main->is_singular) && $main->set('post_type', array_diff(
@@ -81,7 +81,6 @@ add_action('init', function() {
                   , 'post_type' => $cpt
                // , 'taxonomy' => $query->taxonomy
                // , 'terms' => $query->term_id
-               // , 'meta_key' => "$cpt-term"
                   , 'taxonomy' => $cpt
                   , 'terms' => 'term-' . $query->term_id
                   , 'field' => 'id'
@@ -91,7 +90,6 @@ add_action('init', function() {
                   , 'suppress_filters' => true
                 ), $query)))
             and is_object($post = array_shift($post))
-            // and in_array('term-' . $query->term_id, preg_split('#\s+#', get_post_meta($post->ID, "$cpt-term", true)))
             and add_filter('get_term', function($term, $tax) use ($cpt, $post) {
                 return apply_filters("@$cpt:term", $term, $post);
             }, 1, 2)
