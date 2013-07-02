@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.1.0-3
+Version: 0.1.0-4
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -40,34 +40,6 @@ add_action('init', function() {
         )
     )));
     
-    register_post_type("_$cpt", apply_filters("@$cpt:cpt:ui", array(
-        'public' => current_user_can('delete_posts')
-      , 'has_archive' => false
-      , 'taxonomies' => get_taxonomies()
-      , 'capability_type' => 'page'
-      , 'hierarchical' => true
-      , 'supports' => explode('|', 'title|editor|author|thumbnail|excerpt|custom-fields|page-attributes')
-      , 'exclude_from_search' => true
-      , 'publicly_queryable' => false
-      , 'labels' => array(
-            'all_items' => __('All')
-          , 'edit_item' => __('Edit')
-          , 'view_item' => __('View')
-          , 'update_item' => __('Update')
-          , 'add_new_item' => __('Add')
-          , 'new_item_name' => __('Name')
-          , 'search_items' => __('Search')
-          , 'popular_items' => __('Popular')
-          , 'separate_items_with_commas' => __('Separate with commas')
-          , 'add_or_remove_items' => __('Add or remove')
-          , 'choose_from_most_used' => __('Most used')
-          , 'not_found' => __('Not found')
-          , 'parent_item_colon' => __('Parent:')
-          , 'singular_name' => '- Bond'
-          , 'name' => '- Bonds', 
-        )
-    )));
-
     /* register_taxonomy($cpt, array($cpt), apply_filters("@$cpt:tax:ui", array(
         'public' => $is_admin && current_user_can('delete_others_posts')
       , 'hierarchical' => true
@@ -106,12 +78,12 @@ add_action('init', function() {
             and ($post = get_posts(
                 apply_filters("@$cpt:get_posts", array(
                     'posts_per_page'  => 1
-                  , 'post_type' => "_$cpt"
+                  , 'post_type' => $cpt
                // , 'taxonomy' => $query->taxonomy
                // , 'terms' => $query->term_id
                // , 'meta_key' => "$cpt-term"
-               // , 'taxonomy' => $cpt
-               // , 'terms' => 'term-' . $query->term_id
+                  , 'taxonomy' => $cpt
+                  , 'terms' => 'term-' . $query->term_id
                   , 'field' => 'id'
                   , 'order' => 'DESC'
                   , 'orderby' => 'post_date'
