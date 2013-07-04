@@ -3,7 +3,7 @@
 Plugin Name: Bond
 Plugin URI: http://github.com/ryanve/bond
 Description: Manage many-to-many relationships.
-Version: 0.1.0-7
+Version: 0.1.0-8
 Author: Ryan Van Etten
 Author URI: http://ryanve.com
 License: MIT
@@ -65,7 +65,7 @@ add_action('init', function() {
     $is_admin or add_action('pre_get_posts', function(&$query) use ($cpt) {
         # Conditional Tags are not available yet here. 
         # Props like `$query->is_singular` are usable.
-        if ($query->is_main_query()) {
+        if ($query->is_main_query() && empty($query->is_post_type_archive)) {
             $types = (array) ($query->get('post_type') ?: array());
             $admit = apply_filters("@$cpt:admit", true);
             $admit ? $types[] = $cpt : $types = array_diff($types, array($cpt));
@@ -74,27 +74,29 @@ add_action('init', function() {
     }, 100);
 
     $is_admin or add_action('wp', function() use ($cpt) {
-        # print_r(get_queried_object());
+        # print_r(get_queried_object() ?: gettype(get_queried_object()));
+        // get_queried_object returns NULL for date/404/search.
+        // User/Post objects use "ID". Term objects use "term_id".
+        // CPT archive objects use neither on the top-level.
         $bool = (bool) (
-            ! is_singular()
-            and is_object($query = get_queried_object())
-            and !empty($query->taxonomy)
-            and !empty($query->term_id)
+            is_object($query = get_queried_object())
+            and empty($query->taxonomy) ? !empty($query->ID) : !empty($query->term_id)
             and ($post = get_posts(
-                apply_filters("@$cpt:get_posts", array(
+                ($with = (array) apply_filters("@$cpt:get_posts", array(
                     'posts_per_page'  => 1
-                  , 'post_type' => $cpt #get_post_types()
+                  , 'post_type' => $cpt # get_post_types() # could allow "reverse bonds" from any type
                   , 'taxonomy' => $cpt
-                  , 'terms' => 'term-' . $query->term_id
+                  , 'terms' => array('term-' . $query->term_id)
                   , 'field' => 'slug'
                   , 'order' => 'DESC'
                   , 'orderby' => 'post_date'
                   , 'post_status' => 'publish'
                   , 'suppress_filters' => true
-                ), $query)))
+                ), $query))))
             and is_object($post = array_shift($post))
-            and add_filter('get_term', function($term, $tax) use ($cpt, $post) {
-                return apply_filters("@$cpt:term", $term, $post);
+            and isset($with['terms'])
+            and add_filter('get_term', function($term, $tax) use ($cpt, $post, $with) {
+                return has_term($with['terms'], $cpt, $post) ? apply_filters("@$cpt:term", $term, $post) : $term;
             }, 1, 2)
         );
 
